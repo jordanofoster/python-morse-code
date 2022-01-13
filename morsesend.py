@@ -14,7 +14,7 @@ import winsound, time, argparse
 #print(a)
 #print(output)
 
-DOT_LENGTH = 100
+DOT_LENGTH = 50
 MORSE_FREQ = 500
 
 DASH_LENGTH = DOT_LENGTH*3
@@ -23,6 +23,7 @@ LETTER_INTERVAL = DOT_DASH_INTERVAL*3
 WORD_INTERVAL = DOT_DASH_INTERVAL*7
 
 alnumToMorseDict = {
+    #Letters:
     "A": ".-",
     "B": "-...",
     "C": "-.-.",
@@ -49,6 +50,8 @@ alnumToMorseDict = {
     "X": "-..-",
     "Y": "-.--",
     "Z": "--..",
+    #Numbers:
+    "0": "-----",
     "1": ".----",
     "2": "..---",
     "3": "...--",
@@ -58,21 +61,45 @@ alnumToMorseDict = {
     "7": "--...",
     "8": "---..",
     "9": "----.",
-    "0": "-----",
+    #Punctuation:
+    #"Error": "........",
+    "&": ".-...",
+    "'": ".----.",
+    "@": ".--.-.",
+    ")": "-.--.-",
+    "(": "-.--.",
+    ":": "---...",
+    ",": "--..--",
+    "=": "-...-",
+    #Exclamation mark not in ITU-R
+    "!": "-.-.--",
+    ".": ".-.-.-",
+    "-": "-....-",
+    "%": "----- -..-. -----", #This is '0/0' in morse.
+    "+": ".-.-.",
+    "\"": ".-..-.",
+    "?": "..--..",
+    "/": "-..-.",
+
+    #If "_", add empty string - this is used for the letters between a prosign, which require no pause between letters (removal of LETTER_INTERVAL).
+    "_": ""
 }
 
 def playFromMorse(morseCode):
-    for x in morseCode:
-        if x == "/":
-            time.sleep(WORD_INTERVAL)
-        elif x == " ":
-            time.sleep(LETTER_INTERVAL)
-        elif x == ".":
-            winsound.Beep(MORSE_FREQ, DOT_LENGTH)
-            time.sleep(DOT_DASH_INTERVAL)
-        elif x == "-":
-            winsound.Beep(MORSE_FREQ, DASH_LENGTH)
-            time.sleep(DOT_DASH_INTERVAL)
+    if morseCode.isalnum() == True:
+        raise Exception("InvalidEncodingMethod")
+    else:
+        for x in morseCode:
+            if x == "|":
+                time.sleep(WORD_INTERVAL)
+            elif x == " ":
+                time.sleep(LETTER_INTERVAL)
+            elif x == ".":
+                winsound.Beep(MORSE_FREQ, DOT_LENGTH)
+                time.sleep(DOT_DASH_INTERVAL)
+            elif x == "-":
+                winsound.Beep(MORSE_FREQ, DASH_LENGTH)
+                time.sleep(DOT_DASH_INTERVAL)
 
 def transcriptToMorse(plaintext):
     #TODO: handle non-alnumeric plaintexts
@@ -81,9 +108,13 @@ def transcriptToMorse(plaintext):
     for word in plaintext:
         for letter in word:
             morseCode.append(alnumToMorseDict.get(letter))
-            morseCode.append(" ")
+            if "_" in word: #Use _ when creating prosigns to skip
+                morseCode.append("")
+            elif "_" not in word:
+                morseCode.append(" ")
+
         if plaintext.index(word) != len(plaintext)-1:
-            morseCode.append("/")
+            morseCode.append("|")
     return ("".join(morseCode)).strip()
     
 def playFromText(plaintext):
@@ -105,10 +136,22 @@ def loopMorse(morseCode, loopNum=0, originalMsg="UNDEFINED"):
     if loopNum == 0:
         print("Looping endlessly... [Press ^C to quit]")
         while True:
-            playFromMorse(morseCode + "/")
+            playFromMorse(morseCode + "|")
     else:
         for i in range(0,loopNum):
             print(("Loop number {}/{}").format(i+1,loopNum))
-            playFromMorse(morseCode + "/")
+            playFromMorse(morseCode + "|")
 
-loopMorse(transcriptToMorse("SOS"), 10, originalMsg="SOS")
+def freeInput(mode="morse"):
+    if (mode != "morse") and (mode != "alnumeric"):
+        raise Exception("UnknownEncodingMethod")
+    else:
+        while True:
+            transmissionMsg = input("Enter the next message to transmit. [^C to exit]\n")
+            if mode == "morse":
+                playFromMorse(transmissionMsg)
+            elif mode == "alnumeric":
+                playFromText(transmissionMsg)
+
+freeInput("alnumeric")
+#loopMorse(transcriptToMorse("SOS"), 10, originalMsg="SOS")
