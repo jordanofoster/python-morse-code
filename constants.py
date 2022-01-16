@@ -1,12 +1,8 @@
-DOT_LENGTH = 50
-MORSE_FREQ = 500
+#Tuples:
+#These are tuples containing the standard morse code 'alphabets' that are in use.
+#TODO: allow the definition of different morse standards (perhaps from a file).
 
-DASH_LENGTH = DOT_LENGTH*3
-DOT_DASH_INTERVAL = DOT_LENGTH/1000
-LETTER_INTERVAL = DOT_DASH_INTERVAL*3
-WORD_INTERVAL = DOT_DASH_INTERVAL*7
-
-MORSE_ALNUM_TUPLE = ( #TODO: move this to seperate module, and allow the definition of different morse standards (perhaps from a file).
+ITU_R_M_1677_1 = ( # Tuple that represents Internation Morse Code, as defined in Recommendation ITU-R M.1677-1 (10/2009).
     #Letters:
     ("A", ".-"),
     ("B", "-..."),
@@ -46,25 +42,27 @@ MORSE_ALNUM_TUPLE = ( #TODO: move this to seperate module, and allow the definit
     ("8", "---.."),
     ("9", "----."),
     #Punctuation:
-    #"Error": "........",
-    ("&", ".-..."),
-    ("'", ".----."),
-    ("@", ".--.-."),
-    (")", "-.--.-"),
-    ("(", "-.--."),
-    (":", "---..."),
-    (",", "--..--"),
-    ("=", "-...-"),
-    #Exclamation mark not in ITU-R
-    ("!", "-.-.--"),
     (".", ".-.-.-"),
-    ("-", "-....-"),
-    #("%", "----- -..-. -----"), #This is '0/0' in morse. #TODO: implement this somehow (morse-to-alnum).
-    ("+", ".-.-."),
-    ("\"", ".-..-."),
+    (",", "--..--"),
+    (":", "---..."),
     ("?", "..--.."),
+    ("'", ".----."),
+    ("-", "-....-"),
     ("/", "-..-."),
-
-    #If "_", add empty string - this is used for the letters between a prosign, which require no pause between letters (removal of LETTER_INTERVAL).
+    ("(", "-.--."),
+    (")", "-.--.-"),
+    ("\"", ".-..-."),
+    ("=", "-...-"),
+    ("+", ".-.-."),
+    ("@", ".--.-."),
+    #Prosigns:
+    ("<Understood>", "...-.")
+    ("<Error>", "........")
+    #("<Invitation to transmit>", "-.-") # Included in spec, but equivalent to 'K' so left out here.
+    ("<Wait>", ".-...")
+    ("<End of Work>", "...-.-")
+    ("<Starting Signal>", "-.-.-")
+    
+    #If "_", add empty string - this is used for the letters between a prosign, which require no pause between letters (removal of letter interval).
     ("_", "")
 )
