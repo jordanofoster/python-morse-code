@@ -1,37 +1,39 @@
-import winsound, time
+import winsound 
+import time
 
-class dictConstructor:
+class DictConstructor:
     def __init__(self, sourceTuple):
         self._sourceTuple = sourceTuple
-        self._alnumLookupDict = self._constructDict(0,1)
-        self._morseLookupDict = self._constructDict(1,0)
+        self._alnumLookupDict = self._construct_dict(0,1) # Alum:Morse
+        self._morseLookupDict = self._construct_dict(1,0) # Morse:Alnum
     
-    def updateLookupDicts(self, sourceTuple):
+    def update_lookup_dicts(self, sourceTuple):
         self.__init__(sourceTuple)
 
-    def _constructDict(self, key, value):
+    def _construct_dict(self, key, value):
         constructedDict = {}
         for element in self._sourceTuple:
-            constructedDict.update({self._sourceTuple[self._sourceTuple.index(element)][key]:self._sourceTuple[self._sourceTuple.index(element)][value]})
+            xVal = self._sourceTuple[self._sourceTuple.index(element)] # Current elememnt position of unnested (x) tuple
+            constructedDict.update({xVal[key]:xVal[value]}) #Update with key, value from nested tuple
         return constructedDict
     
-    def alnumLookup(self, morseStr):
-        return self._alnumLookupDict.get(morseStr)
+    def alnum_lookup(self, alnumStr):
+        return self._alnumLookupDict.get(alnumStr)
     
-    def morseLookup(self, morseStr):
+    def morse_lookup(self, morseStr):
         return self._morseLookupDict.get(morseStr)
 
-class transcriptor():
+class Transcriptor():
     def __init__(self, morseStandard):
         self._morseStandard = morseStandard
     
-    def updateMorseStandard(self, newMorseStandard):
+    def update_morse_standard(self, newMorseStandard):
         self.__init__(newMorseStandard)
 
-    def toMorse(self, plaintext):
+    def to_morse(self, plaintext):
         #TODO: handle non-alnumeric plaintexts
         plaintext = plaintext.upper().split()
-        tempDict = dictConstructor(self._morseStandard)
+        tempDict = DictConstructor(self._morseStandard)
         morseCode = []
         for word in plaintext:
             for letter in word:
@@ -40,8 +42,10 @@ class transcriptor():
                 morseCode.append("|")
         return ("".join(morseCode)).strip()
     
-    def toAlnum(self, morse):
-        tempDict = dictConstructor(self._morseStandard)
+    def to_alnum(self, morse):
+        if morse.isalnum() == True:
+            raise Exception("NonMorseInput")
+        tempDict = DictConstructor(self._morseStandard)
         charList = []
         message = morse.split()
         for character in message:
@@ -51,7 +55,7 @@ class transcriptor():
                 charList.append(" ")
         return ("".join(charList)).strip()
 
-class morseConfigurator():
+class MorseConfigurator():
     def __init__(self, dotLength, morseFrequency):
         self.dotLength = dotLength
         self.morseFrequency = morseFrequency
@@ -61,18 +65,18 @@ class morseConfigurator():
         self._letterInterval = self._dotDashInterval*3
         self._wordInterval = self._dotDashInterval*7
     
-    def returnConfig(self):
+    def return_config(self):
         return self.dotLength, self.morseFrequency, self._dashLength, self._dotDashInterval, self._letterInterval,
 
-    def setFrequency(self, morseFrequency):
+    def set_freq(self, morseFrequency):
         self.morseFrequency = morseFrequency
 
-    def setNewConfig(self, dotLength, morseFrequency):
+    def set_config(self, dotLength, morseFrequency):
         self.__init__(dotLength, morseFrequency)
 
-class morsePlayer(morseConfigurator):
+class MorsePlayer(MorseConfigurator):
 
-    def playMorseFromFile(self, filename, encoding):
+    def play_morse_from_file(self, filename, encoding):
         fileToPlay = open(filename, "rt")
         if encoding == "morse":
             for morseMsg in fileToPlay.readlines():
@@ -83,7 +87,7 @@ class morsePlayer(morseConfigurator):
         else:
             raise Exception("EncodingMismatchException")
 
-    def playFromMorse(self, morseCode):
+    def play_sound_from_morse(self, morseCode):
         if morseCode.isalnum() == True:
             raise Exception("InvalidEncodingMethodException")
         else:
@@ -99,11 +103,11 @@ class morsePlayer(morseConfigurator):
                     winsound.Beep(self.morseFrequency, self._dashLength)
                     time.sleep(self._dotDashInterval)
     
-    def playFromText(self, plaintext):
-        self.playFromMorse(transcriptor.toMorse(plaintext))
+    def play_sound_from_plaintext(self, plaintext):
+        self.playFromMorse(Transcriptor.toMorse(plaintext))
 
-    def loopMorse(self, morseCode, loopNum):
-        print(("Looping morse code [{}], signalling the following plaintext: [{}]").format(morseCode,transcriptor.toAlnum(morseCode)))
+    def loop_morse(self, morseCode, loopNum):
+        print(("Looping morse code [{}], signalling the following plaintext: [{}]").format(morseCode,Transcriptor.toAlnum(morseCode)))
         if loopNum == 0:
             try:
                 print("Looping endlessly... [Press ^C to quit]")
@@ -116,5 +120,5 @@ class morsePlayer(morseConfigurator):
                 print(("Loop number {}/{}").format(i+1,loopNum))
                 self.playFromMorse(morseCode)
 
-    def loopAlnum(self, plaintext, loopNum):
-        self.loopMorse(transcriptor.toMorse(plaintext), loopNum)
+    def loop_alnum(self, plaintext, loopNum):
+        self.loopMorse(Transcriptor.toMorse(plaintext), loopNum)
